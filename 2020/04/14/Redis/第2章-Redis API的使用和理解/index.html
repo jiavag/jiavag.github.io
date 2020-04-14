@@ -1,0 +1,478 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Redis API的使用和理解 | Jiavg</title><meta name="description" content="Redis API的使用和理解"><meta name="keywords" content="Redis,Redis API"><meta name="author" content="Jiavg"><meta name="copyright" content="Jiavg"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Redis API的使用和理解"><meta name="twitter:description" content="Redis API的使用和理解"><meta name="twitter:image" content="https://jiavag.github.io/img/bg/15.jpg"><meta property="og:type" content="article"><meta property="og:title" content="Redis API的使用和理解"><meta property="og:url" content="https://jiavag.github.io/2020/04/14/Redis/%E7%AC%AC2%E7%AB%A0-Redis%20API%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E7%90%86%E8%A7%A3/"><meta property="og:site_name" content="Jiavg"><meta property="og:description" content="Redis API的使用和理解"><meta property="og:image" content="https://jiavag.github.io/img/bg/15.jpg"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="https://jiavag.github.io/2020/04/14/Redis/%E7%AC%AC2%E7%AB%A0-Redis%20API%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E7%90%86%E8%A7%A3/"><link rel="next" title="Redis初识" href="https://jiavag.github.io/2020/04/14/Redis/%E7%AC%AC1%E7%AB%A0-Redis%E5%88%9D%E8%AF%86/"><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-6386517046719934',
+  enable_page_level_ads: 'true'
+});</script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://www.lylgjiavg.github.io","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: Jiavg","link":"链接: ","source":"来源: Jiavg","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'true',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: false
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">32</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">23</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">7</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 清单</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li></ul></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis-API的使用和理解"><span class="toc-number">1.</span> <span class="toc-text">Redis API的使用和理解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#通用命令和数据结构"><span class="toc-number">1.1.</span> <span class="toc-text">通用命令和数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#通用命令"><span class="toc-number">1.1.1.</span> <span class="toc-text">通用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#keys"><span class="toc-number">1.1.1.1.</span> <span class="toc-text">keys</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dbsize"><span class="toc-number">1.1.1.2.</span> <span class="toc-text">dbsize</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#exists"><span class="toc-number">1.1.1.3.</span> <span class="toc-text">exists</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#del"><span class="toc-number">1.1.1.4.</span> <span class="toc-text">del</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#expire-ttl-persist"><span class="toc-number">1.1.1.5.</span> <span class="toc-text">expire, ttl, persist</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#type"><span class="toc-number">1.1.1.6.</span> <span class="toc-text">type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#时间复杂度"><span class="toc-number">1.1.1.7.</span> <span class="toc-text">时间复杂度</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据结构和内部编码"><span class="toc-number">1.1.2.</span> <span class="toc-text">数据结构和内部编码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Redis-Object"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">Redis Object</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#线程模型"><span class="toc-number">1.2.</span> <span class="toc-text">线程模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#单线程"><span class="toc-number">1.2.1.</span> <span class="toc-text">单线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#单线程为什么这么快"><span class="toc-number">1.2.2.</span> <span class="toc-text">单线程为什么这么快?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注意事项"><span class="toc-number">1.2.3.</span> <span class="toc-text">注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字符串"><span class="toc-number">1.3.</span> <span class="toc-text">字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串键值结构"><span class="toc-number">1.3.1.</span> <span class="toc-text">字符串键值结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串使用场景"><span class="toc-number">1.3.2.</span> <span class="toc-text">字符串使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#get-set-del"><span class="toc-number">1.3.3.</span> <span class="toc-text">get, set, del</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#incr-decr-incrby-decrby"><span class="toc-number">1.3.4.</span> <span class="toc-text">incr, decr, incrby, decrby</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实战"><span class="toc-number">1.3.5.</span> <span class="toc-text">实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#set-setnx-set-xx"><span class="toc-number">1.3.6.</span> <span class="toc-text">set, setnx, set xx</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mget-mset"><span class="toc-number">1.3.7.</span> <span class="toc-text">mget, mset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getset-append-strlen"><span class="toc-number">1.3.8.</span> <span class="toc-text">getset, append, strlen</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#incrbyfloat-getrange-setrange"><span class="toc-number">1.3.9.</span> <span class="toc-text">incrbyfloat, getrange, setrange</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串总结"><span class="toc-number">1.3.10.</span> <span class="toc-text">字符串总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#哈希"><span class="toc-number">1.4.</span> <span class="toc-text">哈希</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#哈希键值结构"><span class="toc-number">1.4.1.</span> <span class="toc-text">哈希键值结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特点"><span class="toc-number">1.4.2.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hget-hset-hdel"><span class="toc-number">1.4.3.</span> <span class="toc-text">hget, hset, hdel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hexists-hlen"><span class="toc-number">1.4.4.</span> <span class="toc-text">hexists, hlen</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hmget-hmset"><span class="toc-number">1.4.5.</span> <span class="toc-text">hmget, hmset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实战-1"><span class="toc-number">1.4.6.</span> <span class="toc-text">实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hgetall-hvals-hkeys"><span class="toc-number">1.4.7.</span> <span class="toc-text">hgetall, hvals, hkeys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#小心使用hgetall"><span class="toc-number">1.4.8.</span> <span class="toc-text">小心使用hgetall</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串-vs-哈希"><span class="toc-number">1.4.9.</span> <span class="toc-text">字符串 vs 哈希</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何存储用户属性"><span class="toc-number">1.4.10.</span> <span class="toc-text">如何存储用户属性?</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#用户信息-string-v1-实现"><span class="toc-number">1.4.10.1.</span> <span class="toc-text">用户信息 (string v1 实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户信息-string-v2-实现"><span class="toc-number">1.4.10.2.</span> <span class="toc-text">用户信息 (string v2 实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户信息-hash-实现"><span class="toc-number">1.4.10.3.</span> <span class="toc-text">用户信息 (hash 实现)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#三种方案比较"><span class="toc-number">1.4.10.4.</span> <span class="toc-text">三种方案比较</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#列表"><span class="toc-number">1.5.</span> <span class="toc-text">列表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#列表结构"><span class="toc-number">1.5.1.</span> <span class="toc-text">列表结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特点-1"><span class="toc-number">1.5.2.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rpush-lpush"><span class="toc-number">1.5.3.</span> <span class="toc-text">rpush, lpush</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linsert"><span class="toc-number">1.5.4.</span> <span class="toc-text">linsert</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lpop-rpop"><span class="toc-number">1.5.5.</span> <span class="toc-text">lpop, rpop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lrem"><span class="toc-number">1.5.6.</span> <span class="toc-text">lrem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ltrim"><span class="toc-number">1.5.7.</span> <span class="toc-text">ltrim</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lrange"><span class="toc-number">1.5.8.</span> <span class="toc-text">lrange</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lindex"><span class="toc-number">1.5.9.</span> <span class="toc-text">lindex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#llen"><span class="toc-number">1.5.10.</span> <span class="toc-text">llen</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#lset"><span class="toc-number">1.5.11.</span> <span class="toc-text">lset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#演示"><span class="toc-number">1.5.12.</span> <span class="toc-text">演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#blpop-brpop"><span class="toc-number">1.5.13.</span> <span class="toc-text">blpop, brpop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TIPS"><span class="toc-number">1.5.14.</span> <span class="toc-text">TIPS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#集合"><span class="toc-number">1.6.</span> <span class="toc-text">集合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#集合结构"><span class="toc-number">1.6.1.</span> <span class="toc-text">集合结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#特点-2"><span class="toc-number">1.6.2.</span> <span class="toc-text">特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sadd-srem"><span class="toc-number">1.6.3.</span> <span class="toc-text">sadd, srem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#scard-sismember-srandmember-spop-smembers"><span class="toc-number">1.6.4.</span> <span class="toc-text">scard, sismember, srandmember, spop, smembers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#演示-1"><span class="toc-number">1.6.5.</span> <span class="toc-text">演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实战-2"><span class="toc-number">1.6.6.</span> <span class="toc-text">实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#集合间API-sdiff-sinter-sunion"><span class="toc-number">1.6.7.</span> <span class="toc-text">集合间API (sdiff, sinter, sunion)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#集合间实战"><span class="toc-number">1.6.8.</span> <span class="toc-text">集合间实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TIPS-1"><span class="toc-number">1.6.9.</span> <span class="toc-text">TIPS</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#有序集合"><span class="toc-number">1.7.</span> <span class="toc-text">有序集合</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#有序集合结构"><span class="toc-number">1.7.1.</span> <span class="toc-text">有序集合结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#集合-vs-有序集合"><span class="toc-number">1.7.2.</span> <span class="toc-text">集合 vs 有序集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#列表-vs-有序集合"><span class="toc-number">1.7.3.</span> <span class="toc-text">列表 vs 有序集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zadd"><span class="toc-number">1.7.4.</span> <span class="toc-text">zadd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zrem"><span class="toc-number">1.7.5.</span> <span class="toc-text">zrem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zscore"><span class="toc-number">1.7.6.</span> <span class="toc-text">zscore</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zincrby"><span class="toc-number">1.7.7.</span> <span class="toc-text">zincrby</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zcard"><span class="toc-number">1.7.8.</span> <span class="toc-text">zcard</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zrange"><span class="toc-number">1.7.9.</span> <span class="toc-text">zrange</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zrangebyscore"><span class="toc-number">1.7.10.</span> <span class="toc-text">zrangebyscore</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zcount"><span class="toc-number">1.7.11.</span> <span class="toc-text">zcount</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zremrangebyrank"><span class="toc-number">1.7.12.</span> <span class="toc-text">zremrangebyrank</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zremrangebyscore"><span class="toc-number">1.7.13.</span> <span class="toc-text">zremrangebyscore</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#演示-2"><span class="toc-number">1.7.14.</span> <span class="toc-text">演示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实战-3"><span class="toc-number">1.7.15.</span> <span class="toc-text">实战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查漏补缺"><span class="toc-number">1.7.16.</span> <span class="toc-text">查漏补缺</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#有序集合总结"><span class="toc-number">1.7.17.</span> <span class="toc-text">有序集合总结</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(/img/bg/15.jpg)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Jiavg</a></span><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 清单</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li></ul></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">Redis API的使用和理解</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-04-14 16:47:49"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-04-14</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-04-15 01:42:16"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2020-04-15</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Redis/">Redis</a></span></div><div class="meta-secondline"> </div><div class="meta-thirdline"><span class="post-meta-pv-cv"><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div id="article-container"><h1 id="Redis-API的使用和理解"><a href="#Redis-API的使用和理解" class="headerlink" title="Redis API的使用和理解"></a>Redis API的使用和理解</h1><ul>
+<li>通用命令</li>
+<li>字符串类型</li>
+<li>哈希类型</li>
+<li>列表类型</li>
+<li>集合类型</li>
+<li>有序集合类型</li>
+</ul>
+<h2 id="通用命令和数据结构"><a href="#通用命令和数据结构" class="headerlink" title="通用命令和数据结构"></a>通用命令和数据结构</h2><h3 id="通用命令"><a href="#通用命令" class="headerlink" title="通用命令"></a>通用命令</h3><h4 id="keys"><a href="#keys" class="headerlink" title="keys"></a>keys</h4><ul>
+<li><p>遍历所有的key</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keys [pattern]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>keys命令一般不在生产环境使用</p>
+<ul>
+<li>keys是一个比较重的命令, 复杂度为O(n), Redis是一个单线程的, 所以此命令会阻塞其他命令</li>
+<li>本身在生产环境中使用此命令没有太大意义, 如若确有此需求 可以使用scan命令</li>
+</ul>
+</li>
+<li><p>keys * 怎么用</p>
+<ul>
+<li>热备从节点 (此节点一般不会部署到生产环境中)</li>
+<li>scan</li>
+</ul>
+</li>
+<li><p>演示1:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost soft]# redis-cli -h 127.0.0.1 -p 6379</span><br><span class="line">127.0.0.1:6379&gt; set hello world</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set name Jiavg</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set java best</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) "name"</span><br><span class="line">2) "hello"</span><br><span class="line">3) "java"</span><br><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>演示2:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mset hello world hehe haha php good phe his</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; keys he*</span><br><span class="line">1) "hehe"</span><br><span class="line">2) "hello"</span><br><span class="line">127.0.0.1:6379&gt; keys he[a-h]*</span><br><span class="line">1) "hehe"</span><br><span class="line">127.0.0.1:6379&gt; keys ph?</span><br><span class="line">1) "phe"</span><br><span class="line">2) "php"</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="dbsize"><a href="#dbsize" class="headerlink" title="dbsize"></a>dbsize</h4><ul>
+<li><p>计算key的总数</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dbsize</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>dbsize可以在线上使用, Redis内置一个计数器, 会实时更新, 故其时间复杂度为O(1)</li>
+</ul>
+</li>
+<li><p>演示</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; mset k1 v1 k2 v2 k3 v3 k4 v4</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; sadd a b c d</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 5</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="exists"><a href="#exists" class="headerlink" title="exists"></a>exists</h4><ul>
+<li><p>检查key是否存在</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exists key1 [key2 ...]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>存在: 返回1, 不存在: 返回0</p>
+</li>
+<li><p>一般情况下可以随意使用, 时间复杂度为O(1), 但是存在特殊情况, 后面将会介绍</p>
+</li>
+</ul>
+</li>
+<li><p>演示:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set k1 v1</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; exists k1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; del k1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; exists k1</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="del"><a href="#del" class="headerlink" title="del"></a>del</h4><ul>
+<li><p>删除指定的key-value</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">del key1 [key2 ...]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>删除成功: 返回1, 删除失败: 返回0</li>
+</ul>
+</li>
+<li><p>演示:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; mset k1 v1 k2 v2</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get k1</span><br><span class="line">"v1"</span><br><span class="line">127.0.0.1:6379&gt; del k1</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; get k1</span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6379&gt; del k3</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="expire-ttl-persist"><a href="#expire-ttl-persist" class="headerlink" title="expire, ttl, persist"></a>expire, ttl, persist</h4><ul>
+<li><p>expire</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 除了指定时间间隔, 也可以指定时间戳</span></span><br><span class="line">expire key seconds</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>指定key过期时间</li>
+</ul>
+</li>
+<li><p>ttl</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ttl key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看key剩余过期时间<ul>
+<li>返回-2: 代表key已经不存在</li>
+<li>返回-1: 代表key存在, 并且没有过期时间</li>
+<li>返回正整数: 代表key距离过期时间的秒数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>persist</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">persist key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>去掉key的过期时间</li>
+</ul>
+</li>
+<li><p>示例:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set k1 v1</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; expire k1 10</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; ttl k1</span><br><span class="line">(integer) 6</span><br><span class="line">127.0.0.1:6379&gt; ttl k1</span><br><span class="line">(integer) 2</span><br><span class="line">127.0.0.1:6379&gt; ttl k1</span><br><span class="line">(integer) -2</span><br><span class="line">127.0.0.1:6379&gt; ttl k1</span><br><span class="line">(integer) -2</span><br><span class="line">127.0.0.1:6379&gt; set k2 v2</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; expire k2 10</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; persist k2</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; ttl k2</span><br><span class="line">(integer) -1</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="type"><a href="#type" class="headerlink" title="type"></a>type</h4><ul>
+<li><p>返回key的类型</p>
+<p>API:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">type key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值有: string, hash, list, set, zset, none(代表key不存在)</li>
+</ul>
+</li>
+<li><p>演示:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set k1 v1</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; type k1</span><br><span class="line">string</span><br><span class="line">127.0.0.1:6379&gt; sadd myset a b c</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; type myset</span><br><span class="line">set</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="时间复杂度"><a href="#时间复杂度" class="headerlink" title="时间复杂度"></a>时间复杂度</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/14/368zOykT9CmNcn4.jpg"  alt="2020-04-14_175048"></p>
+<h3 id="数据结构和内部编码"><a href="#数据结构和内部编码" class="headerlink" title="数据结构和内部编码"></a>数据结构和内部编码</h3><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/14/zuFbQBDWaS3pvds.jpg"  alt="2020-04-14_200442" style="zoom:67%;" />
+
+<h4 id="Redis-Object"><a href="#Redis-Object" class="headerlink" title="Redis Object"></a>Redis Object</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/14/TI4JR5u8EsmC6KL.jpg"  alt="2020-04-14_200859"></p>
+<h2 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h2><h3 id="单线程"><a href="#单线程" class="headerlink" title="单线程"></a>单线程</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/14/WQhx7Zb84kU5YmM.jpg"  alt="2020-04-14_201230"></p>
+<h3 id="单线程为什么这么快"><a href="#单线程为什么这么快" class="headerlink" title="单线程为什么这么快?"></a>单线程为什么这么快?</h3><ol>
+<li>纯内存</li>
+<li>非阻塞IO</li>
+<li>避免线程切换和竞态消耗</li>
+</ol>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/lyiaYjEmrzAPGdK.jpg"  alt="2020-04-14_201701"></p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ul>
+<li><p>一次只运行一条命令</p>
+</li>
+<li><p>拒绝长慢命令</p>
+<p>(keys, flushall, flushdb, slow lua script, mutil/exec, operate big value (collection)</p>
+</li>
+<li><p>其实不是单线程</p>
+<p>redis也是多线程的, 但是redis的主线程处理业务, 而其他三个线程跟主要功能是关系不到的.</p>
+<p>redis为了保证其高效, 一些比较耗时的动作会起线程或者进程来完成, 不会阻塞在业务主线程上.</p>
+<p>(例如: fysnc file descriptor 和 close file descriptor会开起新线程)</p>
+</li>
+</ul>
+<h2 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h2><h3 id="字符串键值结构"><a href="#字符串键值结构" class="headerlink" title="字符串键值结构"></a>字符串键值结构</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/DOTxX6cmvZn3NbL.jpg"  alt="2020-04-14_203442"></p>
+<h3 id="字符串使用场景"><a href="#字符串使用场景" class="headerlink" title="字符串使用场景"></a>字符串使用场景</h3><ul>
+<li>缓存</li>
+<li>计数器</li>
+<li>分布式锁</li>
+<li>……</li>
+</ul>
+<h3 id="get-set-del"><a href="#get-set-del" class="headerlink" title="get, set, del"></a>get, set, del</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 获取key对应的value   O(1)时间复杂度</span></span><br><span class="line">get key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置key-value       O(1)时间复杂度</span></span><br><span class="line">set key value</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除key-value       O(1)时间复杂度</span></span><br><span class="line">del key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>演示:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set hello "world"</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">"world"</span><br><span class="line">127.0.0.1:6379&gt; del hello</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure>
+
+<h3 id="incr-decr-incrby-decrby"><a href="#incr-decr-incrby-decrby" class="headerlink" title="incr, decr, incrby, decrby"></a>incr, decr, incrby, decrby</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> key自增1, 如果key不存在, 自增后get(key)=1   O(1)时间复杂度</span></span><br><span class="line">incr key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> key自减1, 如果key不存在, 自增后get(key)=-1  O(1)时间复杂度</span></span><br><span class="line">decr key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> key自增k, 如果key不存在, 自增后get(key)=k   O(1)时间复杂度</span></span><br><span class="line">incrby key k</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> key自减k, 如果key不存在, 自增后get(key)=-k  O(1)时间复杂度</span></span><br><span class="line">decrby key k</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>演示:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; get counter</span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6379&gt; incr counter</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; get counter</span><br><span class="line">"1"</span><br><span class="line">127.0.0.1:6379&gt; incrby counter 99</span><br><span class="line">(integer) 100</span><br><span class="line">127.0.0.1:6379&gt; decrby counter 50</span><br><span class="line">(integer) 50</span><br><span class="line">127.0.0.1:6379&gt; decr counter</span><br><span class="line">(integer) 49</span><br></pre></td></tr></table></figure>
+
+<h3 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h3><ul>
+<li><p>实现如下功能:</p>
+<p>记录网站每个用户个人主页的访问量?</p>
+<p><code>incr userid:pageview</code> (单线程, 无竞争)</p>
+</li>
+<li><p>实现如下功能:</p>
+<p>缓存视频的基本信息 (数据源在MySQL中)伪代码?</p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/fHjImeKzbvYtX3O.jpg"  alt="2020-04-14_210146"></p>
+</li>
+<li><p>实现如下功能:</p>
+<p>分布式id生成器?</p>
+<p><code>incr id</code> (原子操作 [基础思路, 实际操作较为复杂])</p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/Pu8oWCZixMklU2K.jpg"  alt="2020-04-14_210321"></p>
+</li>
+</ul>
+<h3 id="set-setnx-set-xx"><a href="#set-setnx-set-xx" class="headerlink" title="set, setnx, set xx"></a>set, setnx, set xx</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 不管key是否存在, 都设置    O(1)时间复杂度</span></span><br><span class="line">set key value</span><br><span class="line"> </span><br><span class="line"><span class="meta">#</span><span class="bash"> key不存在, 才设置         O(1)时间复杂度</span></span><br><span class="line">setnx key value</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> key存在, 才设置           O(1)时间复杂度</span></span><br><span class="line">set key value xx</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将value关联到key, 并将key的生存时间设为seconds(以秒为单位)。</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将<span class="built_in">set</span>命令和expire命令结合为原子操作, 在做一些分布式锁方面很有用</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> O(1)时间复杂度</span></span><br><span class="line">setex key seconds value</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>演示:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; exists name</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set name Jiavg</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; setnx name lylgjiavg</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; setnx username jiavag</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; set name root xx</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set name1 root xx</span><br><span class="line">(nil)</span><br><span class="line">127.0.0.1:6379&gt; setex school 10 lylg</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; ttl school</span><br><span class="line">(integer) 4</span><br></pre></td></tr></table></figure>
+
+<h3 id="mget-mset"><a href="#mget-mset" class="headerlink" title="mget, mset"></a>mget, mset</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 批量获取key, 原子操作     时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">mget key1 key2 key3 [key4...]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 批量设置key-value        时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">mset key1 value1 key2 value2 key3 value3</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; mset name jiavg school lylg addr henan</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; mget name school addr</span><br><span class="line">1) "jiavg"</span><br><span class="line">2) "lylg"</span><br><span class="line">3) "henan"</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>n次get</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/prdnbU4MeyjfAKg.jpg"  alt="2020-04-14_213018"></p>
+<ul>
+<li>1次mget</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/MH1fbyCucVQI7NL.jpg"  alt="2020-04-14_213100"></p>
+<h3 id="getset-append-strlen"><a href="#getset-append-strlen" class="headerlink" title="getset, append, strlen"></a>getset, append, strlen</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">set</span> key newvalue 并返回旧的value    O(1)时间复杂度</span></span><br><span class="line">getset key newvalue</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将value追加到旧的value              O(1)时间复杂度</span></span><br><span class="line">append key value</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 返回字符串的长度 (注意中文)           O(1)时间复杂度</span></span><br><span class="line">strlen key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set name jiavg</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; getset name lylgjiavg</span><br><span class="line">"jiavg"</span><br><span class="line">127.0.0.1:6379&gt; append name ", hi!"</span><br><span class="line">(integer) 14</span><br><span class="line">127.0.0.1:6379&gt; get name</span><br><span class="line">"lylgjiavg, hi!"</span><br><span class="line">127.0.0.1:6379&gt; strlen name</span><br><span class="line">(integer) 14</span><br><span class="line">127.0.0.1:6379&gt; set hello "你好"</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; strlen hello</span><br><span class="line">(integer) 6</span><br></pre></td></tr></table></figure>
+
+<h3 id="incrbyfloat-getrange-setrange"><a href="#incrbyfloat-getrange-setrange" class="headerlink" title="incrbyfloat, getrange, setrange"></a>incrbyfloat, getrange, setrange</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 增加key对应的浮点值                O(1)时间复杂度</span></span><br><span class="line">incrbyfloat key floatvalue</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 获取字符串指定下标所有的值           O(1)时间复杂度</span></span><br><span class="line">getrange key start end</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置指定下标所有对应的值             O(1)时间复杂度</span></span><br><span class="line">setrange key index value</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set counter 1</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; incrbyfloat counter 1.5</span><br><span class="line">"2.5"</span><br><span class="line">127.0.0.1:6379&gt; get counter</span><br><span class="line">"2.5"</span><br><span class="line">127.0.0.1:6379&gt; set username lylgjiavg</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; getrange username 0 3</span><br><span class="line">"lylg"</span><br><span class="line">127.0.0.1:6379&gt; setrange username 7 n</span><br><span class="line">(integer) 9</span><br><span class="line">127.0.0.1:6379&gt; get username</span><br><span class="line">"lylgjiang"</span><br></pre></td></tr></table></figure>
+
+<h3 id="字符串总结"><a href="#字符串总结" class="headerlink" title="字符串总结"></a>字符串总结</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/BlbYirmajOHpyI4.jpg"  alt="2020-04-14_215422"></p>
+<h2 id="哈希"><a href="#哈希" class="headerlink" title="哈希"></a>哈希</h2><h3 id="哈希键值结构"><a href="#哈希键值结构" class="headerlink" title="哈希键值结构"></a>哈希键值结构</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/j3PvMWDrO4Zd7cI.jpg"  alt="2020-04-14_215737"></p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/8BVXHTYoZgp71eP.jpg"  alt="2020-04-14_215809"></p>
+<h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><ul>
+<li>Mapmap (即map中含有map的结构)</li>
+<li>field不能相同, value可以相同</li>
+</ul>
+<h3 id="hget-hset-hdel"><a href="#hget-hset-hdel" class="headerlink" title="hget, hset, hdel"></a>hget, hset, hdel</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 获取<span class="built_in">hash</span> key 对应的field的value      O(1)时间复杂度</span></span><br><span class="line">hget key field</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 设置<span class="built_in">hash</span> key对应的field的value       O(1)时间复杂度</span></span><br><span class="line">hset key field value</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 删除<span class="built_in">hash</span> key对应field的value         O(1)时间复杂度</span></span><br><span class="line">hdel key field</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hset user:1:info name jiavg</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; hset user:1:info age 22</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; hgetall user:1:info</span><br><span class="line">1) "name"</span><br><span class="line">2) "jiavg"</span><br><span class="line">3) "age"</span><br><span class="line">4) "22"</span><br><span class="line">127.0.0.1:6379&gt; hdel user:1:info age</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; hgetall user:1:info</span><br><span class="line">1) "name"</span><br><span class="line">2) "jiavg"</span><br></pre></td></tr></table></figure>
+
+<h3 id="hexists-hlen"><a href="#hexists-hlen" class="headerlink" title="hexists, hlen"></a>hexists, hlen</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 判断<span class="built_in">hash</span> key是否有field        O(1)时间复杂度</span></span><br><span class="line">hexist key field</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 获取<span class="built_in">hash</span> key field的数量       O(1)时间复杂度</span></span><br><span class="line">hlen key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hgetall user:1:info</span><br><span class="line">1) "name"</span><br><span class="line">2) "jiavg"</span><br><span class="line">3) "age"</span><br><span class="line">4) "22"</span><br><span class="line">127.0.0.1:6379&gt; hexists user:1:info age</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; hlen user:1:info</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+
+<h3 id="hmget-hmset"><a href="#hmget-hmset" class="headerlink" title="hmget, hmset"></a>hmget, hmset</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 批量获取<span class="built_in">hash</span> key的一批field对应的值   时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">hmget key field1 field2 [field3...]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 批量设置<span class="built_in">hash</span> key的一批field value    时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">hmset key field1 value1 field2 value2 [field3 value3...]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hmset user:1:addr addr1 china addr2 henan addr3 zhoukou</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; hmget user:1:addr addr1 addr3</span><br><span class="line">1) "china"</span><br><span class="line">2) "zhoukou"</span><br></pre></td></tr></table></figure>
+
+<h3 id="实战-1"><a href="#实战-1" class="headerlink" title="实战"></a>实战</h3><ul>
+<li><p>实现如下功能:</p>
+<p>记录网站每个用户个人主页的访问量?</p>
+<p><code>hincrby user:1:info pageview count</code></p>
+</li>
+<li><p>实现如下功能:</p>
+<p>缓存视频的基本信息(数据源在MySQL中)伪代码?</p>
+</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/gDHxUlfqK9vuwSz.jpg"  alt="2020-04-14_222420"></p>
+<h3 id="hgetall-hvals-hkeys"><a href="#hgetall-hvals-hkeys" class="headerlink" title="hgetall, hvals, hkeys"></a>hgetall, hvals, hkeys</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回<span class="built_in">hash</span> key对应的所有field和value</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">hgetall key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 返回<span class="built_in">hash</span> key对应的所有field的value</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">hvals key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 返回<span class="built_in">hash</span> key对应所有的field</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n): n为获得key的数量</span></span><br><span class="line">hkeys key</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>示例:</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; hgetall user:1:info</span><br><span class="line">1) "name"</span><br><span class="line">2) "jiavg"</span><br><span class="line">3) "age"</span><br><span class="line">4) "22"</span><br><span class="line">127.0.0.1:6379&gt; hvals user:1:info</span><br><span class="line">1) "jiavg"</span><br><span class="line">2) "22"</span><br><span class="line">127.0.0.1:6379&gt; hkeys user:1:info</span><br><span class="line">1) "name"</span><br><span class="line">2) "age"</span><br></pre></td></tr></table></figure>
+
+<h3 id="小心使用hgetall"><a href="#小心使用hgetall" class="headerlink" title="小心使用hgetall"></a>小心使用hgetall</h3><ul>
+<li>小心使用, 牢记单线程</li>
+<li>如果hgetall的key的field很多将会造成其他命令阻塞</li>
+</ul>
+<h3 id="字符串-vs-哈希"><a href="#字符串-vs-哈希" class="headerlink" title="字符串 vs 哈希"></a>字符串 vs 哈希</h3><ul>
+<li>相似的API</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/daDBu18fJO62lsI.jpg"  alt="2020-04-14_223836"></p>
+<h3 id="如何存储用户属性"><a href="#如何存储用户属性" class="headerlink" title="如何存储用户属性?"></a>如何存储用户属性?</h3><h4 id="用户信息-string-v1-实现"><a href="#用户信息-string-v1-实现" class="headerlink" title="用户信息 (string v1 实现)"></a>用户信息 (string v1 实现)</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/4bSAgXtxYJFOGZq.jpg"  alt="2020-04-14_223959"></p>
+<h4 id="用户信息-string-v2-实现"><a href="#用户信息-string-v2-实现" class="headerlink" title="用户信息 (string v2 实现)"></a>用户信息 (string v2 实现)</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/lCz2yOidLguAQmR.jpg"  alt="2020-04-14_224048"></p>
+<h4 id="用户信息-hash-实现"><a href="#用户信息-hash-实现" class="headerlink" title="用户信息 (hash 实现)"></a>用户信息 (hash 实现)</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/bPsoxURhTazE6Sl.jpg"  alt="2020-04-14_224139"></p>
+<h4 id="三种方案比较"><a href="#三种方案比较" class="headerlink" title="三种方案比较"></a>三种方案比较</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/R2LeEmCbWVkr4xy.jpg"  alt="2020-04-14_224224"></p>
+<h2 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h2><h3 id="列表结构"><a href="#列表结构" class="headerlink" title="列表结构"></a>列表结构</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/F2Sr1GWIztnfORj.jpg"  alt="2020-04-14_224647"></p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/gQr4onu6BJhdteU.jpg"  alt="2020-04-14_224714"></p>
+<h3 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h3><ul>
+<li>有序</li>
+<li>可以重复</li>
+<li>左右两边插入弹出</li>
+</ul>
+<h3 id="rpush-lpush"><a href="#rpush-lpush" class="headerlink" title="rpush, lpush"></a>rpush, lpush</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 从列表右端插入值 (1~n个)    时间复杂度O(1~n)</span></span><br><span class="line">rpush key value1 value2 [value3...]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 从列表左端插入值 (1~n个)    时间复杂度O(1~n)</span></span><br><span class="line">lpush key value1 value2 [value3...]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/TKAjugYW4LlkmMO.jpg"  alt="2020-04-14_224955"></p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/Yg16fZRWAtznV3J.jpg"  alt="2020-04-14_225017"></p>
+<h3 id="linsert"><a href="#linsert" class="headerlink" title="linsert"></a>linsert</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在list指定的值前|后插入newvalue</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n)</span></span><br><span class="line">linsert key before|after value newvalue</span><br></pre></td></tr></table></figure>
+
+<h3 id="lpop-rpop"><a href="#lpop-rpop" class="headerlink" title="lpop, rpop"></a>lpop, rpop</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 从列表左侧弹出一个item</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">lpop key</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 从列表右侧弹出一个item</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">rpop key</span><br></pre></td></tr></table></figure>
+
+<h3 id="lrem"><a href="#lrem" class="headerlink" title="lrem"></a>lrem</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/HesKlBi5oCGfT4k.jpg"  alt="2020-04-14_231707"></p>
+<h3 id="ltrim"><a href="#ltrim" class="headerlink" title="ltrim"></a>ltrim</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 按照索引范围修剪列表</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n)</span></span><br><span class="line">ltrim key start end</span><br></pre></td></tr></table></figure>
+
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/zo2I5F8K6GhPxVb.jpg"  alt="2020-04-14_232017"></p>
+<h3 id="lrange"><a href="#lrange" class="headerlink" title="lrange"></a>lrange</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/mdjW4YgtNG2iHxz.jpg"  alt="2020-04-14_232246"></p>
+<h3 id="lindex"><a href="#lindex" class="headerlink" title="lindex"></a>lindex</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 获取列表指定索引的item</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n)</span></span><br><span class="line">lindex key index</span><br></pre></td></tr></table></figure>
+
+<h3 id="llen"><a href="#llen" class="headerlink" title="llen"></a>llen</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 获取列表长度</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">llen key</span><br></pre></td></tr></table></figure>
+
+<h3 id="lset"><a href="#lset" class="headerlink" title="lset"></a>lset</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 设置列表指定索引值为newvalue</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(n)</span></span><br><span class="line">lset key index newvalue</span><br></pre></td></tr></table></figure>
+
+<h3 id="演示"><a href="#演示" class="headerlink" title="演示"></a>演示</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; lpush mylist a b c </span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; rpush mylist d e f</span><br><span class="line">(integer) 6</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 1 -1</span><br><span class="line">1) "b"</span><br><span class="line">2) "a"</span><br><span class="line">3) "d"</span><br><span class="line">4) "e"</span><br><span class="line">5) "f"</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "c"</span><br><span class="line">2) "b"</span><br><span class="line">3) "a"</span><br><span class="line">4) "d"</span><br><span class="line">5) "e"</span><br><span class="line">6) "f"</span><br><span class="line">127.0.0.1:6379&gt; lpop mylist</span><br><span class="line">"c"</span><br><span class="line">127.0.0.1:6379&gt; rpop mylist</span><br><span class="line">"f"</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "b"</span><br><span class="line">2) "a"</span><br><span class="line">3) "d"</span><br><span class="line">4) "e"</span><br><span class="line">127.0.0.1:6379&gt; linsert mylist before a a1</span><br><span class="line">(integer) 5</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "b"</span><br><span class="line">2) "a1"</span><br><span class="line">3) "a"</span><br><span class="line">4) "d"</span><br><span class="line">5) "e"</span><br><span class="line">127.0.0.1:6379&gt; lrem mylist 0 a</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "b"</span><br><span class="line">2) "a1"</span><br><span class="line">3) "d"</span><br><span class="line">4) "e"</span><br><span class="line">127.0.0.1:6379&gt; ltrim mylist 1 3</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "a1"</span><br><span class="line">2) "d"</span><br><span class="line">3) "e"</span><br><span class="line">127.0.0.1:6379&gt; lindex mylist 0</span><br><span class="line">"a1"</span><br><span class="line">127.0.0.1:6379&gt; llen mylist</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; lset mylist 0 a</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; lrange mylist 0 -1</span><br><span class="line">1) "a"</span><br><span class="line">2) "d"</span><br><span class="line">3) "e"</span><br></pre></td></tr></table></figure>
+
+<h3 id="blpop-brpop"><a href="#blpop-brpop" class="headerlink" title="blpop, brpop"></a>blpop, brpop</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> lpop阻塞版本, timeout是阻塞超时时间, timeout=0为永远不阻塞</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">blpop key timeout</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> rpop阻塞版本, timeout是阻塞超时时间, timeout=0为永远不阻塞</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">brpop key timeout</span><br></pre></td></tr></table></figure>
+
+<h3 id="TIPS"><a href="#TIPS" class="headerlink" title="TIPS"></a>TIPS</h3><ol>
+<li>lpush + lpop = Stack</li>
+<li>lpush + rpop = Queue</li>
+<li>lpush + ltrim = Capped Collection</li>
+<li>lpush + brpop = Message Queue</li>
+</ol>
+<h2 id="集合"><a href="#集合" class="headerlink" title="集合"></a>集合</h2><h3 id="集合结构"><a href="#集合结构" class="headerlink" title="集合结构"></a>集合结构</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/Bl6omUjR3LFa2zS.jpg"  alt="2020-04-14_234554"></p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/yIeX72skmZVgLqG.jpg"  alt="2020-04-14_234905"></p>
+<h3 id="特点-2"><a href="#特点-2" class="headerlink" title="特点"></a>特点</h3><ul>
+<li>无序</li>
+<li>无重复</li>
+<li>支持集合间操作</li>
+</ul>
+<h3 id="sadd-srem"><a href="#sadd-srem" class="headerlink" title="sadd, srem"></a>sadd, srem</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 向集合key添加1element(如果element已经存在, 添加失败)</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">sadd key element</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将集合key中的element移除掉</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">srem key element</span><br></pre></td></tr></table></figure>
+
+<h3 id="scard-sismember-srandmember-spop-smembers"><a href="#scard-sismember-srandmember-spop-smembers" class="headerlink" title="scard, sismember, srandmember, spop, smembers"></a>scard, sismember, srandmember, spop, smembers</h3><ul>
+<li>小心使用smembers</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/6FuHnMzxDCmS5di.jpg"  alt="2020-04-14_235407"></p>
+<h3 id="演示-1"><a href="#演示-1" class="headerlink" title="演示"></a>演示</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; sadd names jiavg znc lx ycg</span><br><span class="line">(integer) 4</span><br><span class="line">127.0.0.1:6379&gt; smembers names</span><br><span class="line">1) "lx"</span><br><span class="line">2) "ycg"</span><br><span class="line">3) "jiavg"</span><br><span class="line">4) "znc"</span><br><span class="line">127.0.0.1:6379&gt; spop names</span><br><span class="line">"lx"</span><br><span class="line">127.0.0.1:6379&gt; smembers names</span><br><span class="line">1) "ycg"</span><br><span class="line">2) "jiavg"</span><br><span class="line">3) "znc"</span><br><span class="line">127.0.0.1:6379&gt; scard names</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; sismember names lx</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="实战-2"><a href="#实战-2" class="headerlink" title="实战"></a>实战</h3><ul>
+<li>抽奖系统</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/lji7cNP84Q1oqbh.jpg"  alt="2020-04-15_000013"></p>
+<ul>
+<li>Like, 赞, 踩</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/ewyao5Zz4gQU2Af.jpg"  alt="2020-04-15_000056"></p>
+<ul>
+<li>标签</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/9XKfBkE2TLxirJh.jpg"  alt="2020-04-15_000142"></p>
+<h3 id="集合间API-sdiff-sinter-sunion"><a href="#集合间API-sdiff-sinter-sunion" class="headerlink" title="集合间API (sdiff, sinter, sunion)"></a>集合间API (sdiff, sinter, sunion)</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/sZfimzavP1hXcKO.jpg"  alt="2020-04-15_000408"></p>
+<h3 id="集合间实战"><a href="#集合间实战" class="headerlink" title="集合间实战"></a>集合间实战</h3><ul>
+<li>共同关注</li>
+</ul>
+<img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/vldG8pPWzQrhgcA.jpg"  alt="2020-04-15_000531" style="zoom:50%;" />
+
+<h3 id="TIPS-1"><a href="#TIPS-1" class="headerlink" title="TIPS"></a>TIPS</h3><ul>
+<li>sadd = tagging</li>
+<li>spop/srandmember = random item</li>
+<li>sadd + sinter = social graph</li>
+</ul>
+<h2 id="有序集合"><a href="#有序集合" class="headerlink" title="有序集合"></a>有序集合</h2><h3 id="有序集合结构"><a href="#有序集合结构" class="headerlink" title="有序集合结构"></a>有序集合结构</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/xrp2yMCTBJeuZF8.jpg"  alt="2020-04-15_001535"></p>
+<h3 id="集合-vs-有序集合"><a href="#集合-vs-有序集合" class="headerlink" title="集合 vs 有序集合"></a>集合 vs 有序集合</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/mdHnI7MDjWFoviS.jpg"  alt="2020-04-15_001429"></p>
+<h3 id="列表-vs-有序集合"><a href="#列表-vs-有序集合" class="headerlink" title="列表 vs 有序集合"></a>列表 vs 有序集合</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/P2bWD7RVHK1ELFh.jpg"  alt="2020-04-15_001706"></p>
+<h3 id="zadd"><a href="#zadd" class="headerlink" title="zadd"></a>zadd</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 添加score和element, element不可重复, score可以重复(可以多对)</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logN)</span></span><br><span class="line">zadd key score element</span><br></pre></td></tr></table></figure>
+
+<h3 id="zrem"><a href="#zrem" class="headerlink" title="zrem"></a>zrem</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 删除元素 (可以是多个) </span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">zrem key element</span><br></pre></td></tr></table></figure>
+
+<h3 id="zscore"><a href="#zscore" class="headerlink" title="zscore"></a>zscore</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回元素的分数</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">zscore key element</span><br></pre></td></tr></table></figure>
+
+<h3 id="zincrby"><a href="#zincrby" class="headerlink" title="zincrby"></a>zincrby</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 增加或减少元素的分数</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">zincrby key increScore element</span><br></pre></td></tr></table></figure>
+
+<h3 id="zcard"><a href="#zcard" class="headerlink" title="zcard"></a>zcard</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回元素的总个数</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(1)</span></span><br><span class="line">zcard key</span><br></pre></td></tr></table></figure>
+
+<h3 id="zrange"><a href="#zrange" class="headerlink" title="zrange"></a>zrange</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回指定索引范围内的升序元素[是否显示分值]</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logn + m): n指有序集合元素个数, m指获取范围内元素个数</span></span><br><span class="line">zrange key start end [withscores]</span><br></pre></td></tr></table></figure>
+
+<h3 id="zrangebyscore"><a href="#zrangebyscore" class="headerlink" title="zrangebyscore"></a>zrangebyscore</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回指定分数范围内的升序元素[是否显示分值]</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logn + m): n指有序集合元素个数, m指获取范围内元素个数</span></span><br><span class="line">zrange key minscore maxscore [withscores]</span><br></pre></td></tr></table></figure>
+
+<h3 id="zcount"><a href="#zcount" class="headerlink" title="zcount"></a>zcount</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回有序集合指定分数范围内的元素个数</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logn + m): n指有序集合元素个数, m指获取范围内元素个数</span></span><br><span class="line">zcount key minscore maxscore</span><br></pre></td></tr></table></figure>
+
+<h3 id="zremrangebyrank"><a href="#zremrangebyrank" class="headerlink" title="zremrangebyrank"></a>zremrangebyrank</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 删除指定排名内的升序元素</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logn + m): n指有序集合元素个数, m指删除范围内元素个数</span></span><br><span class="line">zremrangebyrank key start end</span><br></pre></td></tr></table></figure>
+
+<h3 id="zremrangebyscore"><a href="#zremrangebyscore" class="headerlink" title="zremrangebyscore"></a>zremrangebyscore</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 删除指定分数内的升序元素</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 时间复杂度O(logn + m): n指有序集合元素个数, m指删除范围内元素个数</span></span><br><span class="line">zremrangebyscore key minscore maxscore</span><br></pre></td></tr></table></figure>
+
+<h3 id="演示-2"><a href="#演示-2" class="headerlink" title="演示"></a>演示</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/IQlBcmeGTkYK6LU.jpg"  alt="2020-04-15_002620"></p>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/ukQBwIvt81JHSWj.jpg"  alt="2020-04-15_003832"></p>
+<h3 id="实战-3"><a href="#实战-3" class="headerlink" title="实战"></a>实战</h3><ul>
+<li>排行榜</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/T7EAYUm6uaNLw1O.jpg"  alt="2020-04-15_003932"></p>
+<p>score: timestamp, salecount, followcount</p>
+<h3 id="查漏补缺"><a href="#查漏补缺" class="headerlink" title="查漏补缺"></a>查漏补缺</h3><ul>
+<li>zrevrank</li>
+<li>zrevrange</li>
+<li>zrevrangebyscore</li>
+<li>zinterstore</li>
+<li>zunionstore</li>
+</ul>
+<h3 id="有序集合总结"><a href="#有序集合总结" class="headerlink" title="有序集合总结"></a>有序集合总结</h3><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/15/BShN5uRv2wqWkUf.jpg"  alt="2020-04-15_004354"></p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Jiavg</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://jiavag.github.io/2020/04/14/Redis/%E7%AC%AC2%E7%AB%A0-Redis%20API%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E7%90%86%E8%A7%A3/">https://jiavag.github.io/2020/04/14/Redis/%E7%AC%AC2%E7%AB%A0-Redis%20API%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E7%90%86%E8%A7%A3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://jiavag.github.io" target="_blank">Jiavg</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/Redis-API/">Redis API</a></div><div class="post_share"><div class="social-share" data-image="/img/bg/15.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button button--primary button--animated"> <i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="/img/wechat.png" alt="微信"/><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="/img/alipay.png" alt="支付寶"/><div class="post-qr-code__desc">支付寶</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="next-post pull-full"><a href="/2020/04/14/Redis/%E7%AC%AC1%E7%AB%A0-Redis%E5%88%9D%E8%AF%86/"><img class="next_cover lazyload" data-src="/img/bg/7.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Redis初识</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/04/14/Redis/第1章-Redis初识/" title="Redis初识"><img class="relatedPosts_cover lazyload"data-src="/img/bg/7.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-14</div><div class="relatedPosts_title">Redis初识</div></div></a></div></div><div class="clear_both"></div></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 By Jiavg</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script></body></html>
