@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Redis持久化的取舍和选择 | Jiavg</title><meta name="description" content="Redis持久化的取舍和选择"><meta name="keywords" content="Redis,Redis持久化"><meta name="author" content="Jiavg"><meta name="copyright" content="Jiavg"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Redis持久化的取舍和选择"><meta name="twitter:description" content="Redis持久化的取舍和选择"><meta name="twitter:image" content="https://jiavag.github.io/img/bg/4.png"><meta property="og:type" content="article"><meta property="og:title" content="Redis持久化的取舍和选择"><meta property="og:url" content="https://jiavag.github.io/2020/04/18/Redis/%E7%AC%AC5%E7%AB%A0-Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E5%8F%96%E8%88%8D%E5%92%8C%E9%80%89%E6%8B%A9/"><meta property="og:site_name" content="Jiavg"><meta property="og:description" content="Redis持久化的取舍和选择"><meta property="og:image" content="https://jiavag.github.io/img/bg/4.png"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="https://jiavag.github.io/2020/04/18/Redis/%E7%AC%AC5%E7%AB%A0-Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E5%8F%96%E8%88%8D%E5%92%8C%E9%80%89%E6%8B%A9/"><link rel="next" title="EXPLAIN用法和结果分析" href="https://jiavag.github.io/2020/04/18/SQL/2.SQL-%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BD%BF%E7%94%A8%E5%8E%9F%E5%88%99/"><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-6386517046719934',
+  enable_page_level_ads: 'true'
+});</script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://www.lylgjiavg.github.io","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: Jiavg","link":"链接: ","source":"来源: Jiavg","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'true',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: false
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">38</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">29</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">8</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 清单</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li></ul></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Redis持久化的取舍和选择"><span class="toc-number">1.</span> <span class="toc-text">Redis持久化的取舍和选择</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#持久化的作用"><span class="toc-number">1.1.</span> <span class="toc-text">持久化的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是持久化"><span class="toc-number">1.1.1.</span> <span class="toc-text">什么是持久化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#持久化的方式"><span class="toc-number">1.1.2.</span> <span class="toc-text">持久化的方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDB"><span class="toc-number">1.2.</span> <span class="toc-text">RDB</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是RDB"><span class="toc-number">1.2.1.</span> <span class="toc-text">什么是RDB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#触发机制"><span class="toc-number">1.2.2.</span> <span class="toc-text">触发机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#save命令"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">save命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#bgsave命令"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">bgsave命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#save与bgsave"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">save与bgsave</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#自动生成RDB"><span class="toc-number">1.2.2.4.</span> <span class="toc-text">自动生成RDB</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#关于RDB配置"><span class="toc-number">1.2.3.</span> <span class="toc-text">关于RDB配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#触发机制-不容忽视的方式"><span class="toc-number">1.2.4.</span> <span class="toc-text">触发机制 - 不容忽视的方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#试验"><span class="toc-number">1.2.5.</span> <span class="toc-text">试验</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#save阻塞"><span class="toc-number">1.2.5.1.</span> <span class="toc-text">save阻塞</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#bgsave-fork"><span class="toc-number">1.2.5.2.</span> <span class="toc-text">bgsave fork</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#真的自动"><span class="toc-number">1.2.5.3.</span> <span class="toc-text">真的自动?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RDB长啥样"><span class="toc-number">1.2.5.4.</span> <span class="toc-text">RDB长啥样?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RDB总结"><span class="toc-number">1.2.6.</span> <span class="toc-text">RDB总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AOF"><span class="toc-number">1.3.</span> <span class="toc-text">AOF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RDB有什么问题"><span class="toc-number">1.3.1.</span> <span class="toc-text">RDB有什么问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#耗时-耗性能"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">耗时, 耗性能</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#不可控-丢失数据"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">不可控, 丢失数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是AOF"><span class="toc-number">1.3.2.</span> <span class="toc-text">什么是AOF</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF运行原理-创建"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">AOF运行原理 - 创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF运行原理-恢复"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">AOF运行原理 - 恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AOF的三种策略"><span class="toc-number">1.3.3.</span> <span class="toc-text">AOF的三种策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#always"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">always</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#everysec-默认"><span class="toc-number">1.3.3.2.</span> <span class="toc-text">everysec (默认)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#no"><span class="toc-number">1.3.3.3.</span> <span class="toc-text">no</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三种策略选择"><span class="toc-number">1.3.4.</span> <span class="toc-text">三种策略选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AOF重写"><span class="toc-number">1.3.5.</span> <span class="toc-text">AOF重写</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF重写作用"><span class="toc-number">1.3.5.1.</span> <span class="toc-text">AOF重写作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF重写实现两种方式"><span class="toc-number">1.3.5.2.</span> <span class="toc-text">AOF重写实现两种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#bgrewriteaof"><span class="toc-number">1.3.5.2.1.</span> <span class="toc-text">bgrewriteaof</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#AOF重写配置"><span class="toc-number">1.3.5.2.2.</span> <span class="toc-text">AOF重写配置</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AOF重写流程"><span class="toc-number">1.3.5.3.</span> <span class="toc-text">AOF重写流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#配置"><span class="toc-number">1.3.5.4.</span> <span class="toc-text">配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RDB和AOF的抉择"><span class="toc-number">1.4.</span> <span class="toc-text">RDB和AOF的抉择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RDB与AOF"><span class="toc-number">1.4.1.</span> <span class="toc-text">RDB与AOF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RDB”最佳策略”"><span class="toc-number">1.4.2.</span> <span class="toc-text">RDB”最佳策略”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AOF最佳策略"><span class="toc-number">1.4.3.</span> <span class="toc-text">AOF最佳策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#最佳策略"><span class="toc-number">1.4.4.</span> <span class="toc-text">最佳策略</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(/img/bg/4.png)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">Jiavg</a></span><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 清单</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li></ul></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">Redis持久化的取舍和选择</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-04-18 23:10:51"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-04-18</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-04-19 02:25:53"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2020-04-19</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/Redis/">Redis</a></span></div><div class="meta-secondline"> </div><div class="meta-thirdline"><span class="post-meta-pv-cv"><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div id="article-container"><h1 id="Redis持久化的取舍和选择"><a href="#Redis持久化的取舍和选择" class="headerlink" title="Redis持久化的取舍和选择"></a>Redis持久化的取舍和选择</h1><h2 id="持久化的作用"><a href="#持久化的作用" class="headerlink" title="持久化的作用"></a>持久化的作用</h2><h3 id="什么是持久化"><a href="#什么是持久化" class="headerlink" title="什么是持久化"></a>什么是持久化</h3><ul>
+<li>Redis所有数据保存在内存中, 对数据的更新异步的保存到磁盘上就是持久化.</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/6z2tUorcJuKpdDn.jpg"  alt="2020-04-18_231501"></p>
+<h3 id="持久化的方式"><a href="#持久化的方式" class="headerlink" title="持久化的方式"></a>持久化的方式</h3><ul>
+<li>快照<ul>
+<li>把某个状态的数据信息拍一张’照片’, 保存在磁盘上, 保存的是某个时刻的数据信息</li>
+<li>例: MySQL Dump, Redis RDB使用的是这种方式</li>
+</ul>
+</li>
+<li>写日志<ul>
+<li>数据库数据进行任何的更新, 将以写日志的方式保存. 当需要恢复时, 把日志信息重新’走一遍’就可恢复数据的状态.</li>
+<li>例: MySQL Biglog, Hbase Hlog, Redis AOF使用的是这种方式</li>
+</ul>
+</li>
+</ul>
+<h2 id="RDB"><a href="#RDB" class="headerlink" title="RDB"></a>RDB</h2><h3 id="什么是RDB"><a href="#什么是RDB" class="headerlink" title="什么是RDB"></a>什么是RDB</h3><ul>
+<li>redis数据保存在内存中, 当使用生成RDB的命令可以将redis内存中数据保存为磁盘上的RDB文件</li>
+<li>RDB文件可以用来做数据备份及数据恢复.</li>
+<li>RDB文件也是复制的媒介.(Redis主从复制)</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/Z8nTBHqUsA1iEgl.jpg"  alt="2020-04-18_233327"></p>
+<h3 id="触发机制"><a href="#触发机制" class="headerlink" title="触发机制"></a>触发机制</h3><ul>
+<li>save (同步)</li>
+<li>bgsave (异步)</li>
+<li>自动 (某些条件达到时自动生成RDB文件)</li>
+</ul>
+<h4 id="save命令"><a href="#save命令" class="headerlink" title="save命令"></a>save命令</h4><ul>
+<li>save命令是一个同步的命令, 当数据量很大时可能造成阻塞.</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/AC4tFQeI25VfGoh.jpg"  alt="2020-04-18_234056"></p>
+<ul>
+<li>文件策略: 执行命令时会把Redis内存中数据保存为一个临时的文件, 保存成功后删除旧的文件然后用新的文件代替之.</li>
+<li>复杂度: O(n)</li>
+</ul>
+<h4 id="bgsave命令"><a href="#bgsave命令" class="headerlink" title="bgsave命令"></a>bgsave命令</h4><ul>
+<li>bgsave命令是一个异步的命令, 当执行此命令时会利用redis的fork()函数生成一个子进程.</li>
+<li>fork()函数是非常快的, 但是极少情况下可能会出现慢的情况, 此时也有可能造成阻塞.</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/gDwPMJb6dqpaCz5.jpg"  alt="2020-04-18_234728"></p>
+<ul>
+<li>文件策略和复杂度和save命令相同</li>
+</ul>
+<h4 id="save与bgsave"><a href="#save与bgsave" class="headerlink" title="save与bgsave"></a>save与bgsave</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/6kFMTjiX7BbLV15.jpg"  alt="2020-04-18_235133"></p>
+<p>​    注: bgsave<code>不阻塞</code>客户端命令(不阻塞是带引号的, 因为fork()会发生阻塞, 但通常很短的时间)</p>
+<h4 id="自动生成RDB"><a href="#自动生成RDB" class="headerlink" title="自动生成RDB"></a>自动生成RDB</h4><ul>
+<li>Redis提供了一个配置使其自动生成RDB</li>
+<li>默认配置解释: 每900s 有1条改变|每300s 有10条改变|每60秒有10000条改变, 都会触发Redis自动生成RDB文件(内部使用bgsave命令).</li>
+<li>不是一种很好的方式, 写入时机不好控制(虽然能设置配置条件, 但无法满足实际需求).</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/18/2o8WbJ9LcQIT4vm.jpg"  alt="2020-04-18_235623"></p>
+<h3 id="关于RDB配置"><a href="#关于RDB配置" class="headerlink" title="关于RDB配置"></a>关于RDB配置</h3><ul>
+<li>Redis默认关于RDB文件的配置</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 关于自动生成RDB文件的策略</span></span><br><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 默认生成RDB文件名称 (包括执行save命令, bgsave命令, 自动生成RDB)</span></span><br><span class="line">dbfilename dump.rdb</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 生成RDB文件位置</span></span><br><span class="line">dir ./</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 在使用bgsave生成RDB文件出错时是否停止生成RDB文件</span></span><br><span class="line">stop-writes-on-bgsave-error yes</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 生成的RDB文件是否采用压缩的格式</span></span><br><span class="line">rdbcompression yes</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 是否对RDB文件进行校验和的检验</span></span><br><span class="line">rdbchecksum yes</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>最佳配置<ul>
+<li><code>dbfilename</code> 采用根据运行端口进行命令. (因为Redis是单线程, 所以通常一台机器会跑几个Redis进程, 通过这种命令方式, 避免各个进程之间的Redis生成的RDB文件造成覆写)</li>
+<li><code>dir</code> 选择一个大磁盘路径</li>
+<li><code>rdbcompression</code> 一般进行压缩, 方便进行主从复制</li>
+</ul>
+</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/EhWeqoZc8FkSNXT.jpg"  alt="2020-04-19_001049"></p>
+<h3 id="触发机制-不容忽视的方式"><a href="#触发机制-不容忽视的方式" class="headerlink" title="触发机制 - 不容忽视的方式"></a>触发机制 - 不容忽视的方式</h3><ul>
+<li><p>全量复制</p>
+<p>当进行主从复制时, Redis会自动生成一个RDB文件用于主从复制</p>
+</li>
+<li><p>debug reload</p>
+<p>当Redis使用debug方式进行重启时, 会生成一个RDB文件用于重启后的数据恢复</p>
+</li>
+<li><p>shutdown</p>
+<p>此命令有一个<code>-save</code>参数, 该参数会把Redis内存中的数据保存为RDB文件后进行关闭</p>
+</li>
+</ul>
+<h3 id="试验"><a href="#试验" class="headerlink" title="试验"></a>试验</h3><ul>
+<li>试验前配置</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost redis]# mkdir data</span><br><span class="line">[root@localhost redis]# mkdir config</span><br><span class="line">[root@localhost redis]# cp redis.conf ./config/redis-6379.conf</span><br><span class="line">[root@localhost redis]# pwd</span><br><span class="line">/usr/local/soft/redis</span><br><span class="line">[root@localhost redis]# vim ./config/redis-6379.conf</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 修改redis-6379.conf文件的如下内容</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> ---------------------------<span class="comment">#</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 以守护进程的方式启动redis-server</span></span><br><span class="line">daemonize yes</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 日志文件名</span></span><br><span class="line">logfile "6379.log"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 禁用掉自动生成RDB</span></span><br><span class="line"><span class="meta">#</span><span class="bash">save 900 1</span></span><br><span class="line"><span class="meta">#</span><span class="bash">save 300 10</span></span><br><span class="line"><span class="meta">#</span><span class="bash">save 60 10000</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 生成的RDB文件名</span></span><br><span class="line">dbfilename dump-6379.rdb</span><br><span class="line"><span class="meta">#</span><span class="bash"> ---------------------------<span class="comment">#</span></span></span><br></pre></td></tr></table></figure>
+
+<h4 id="save阻塞"><a href="#save阻塞" class="headerlink" title="save阻塞"></a>save阻塞</h4><ul>
+<li>生成5000000条测试数据</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; debug populate 5000000</span><br><span class="line">OK</span><br><span class="line">(21.25s)</span><br><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 5000000</span><br><span class="line">127.0.0.1:6379&gt; info memory</span><br><span class="line"><span class="meta">#</span><span class="bash"> Memory</span></span><br><span class="line">used_memory:627908040</span><br><span class="line">used_memory_human:598.82M</span><br><span class="line">used_memory_rss:647372800</span><br><span class="line">used_memory_peak:627908040</span><br><span class="line">used_memory_peak_human:598.82M</span><br><span class="line">used_memory_lua:36864</span><br><span class="line">mem_fragmentation_ratio:1.03</span><br><span class="line">mem_allocator:jemalloc-3.6.0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>另开一个终端, 输入如下命令 (get hello在下一步再运行)</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set hello world</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在本终端运行save命令, 然后在上一个终端运行get命令, 查看save命令是否阻塞</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 终端1</span></span><br><span class="line">127.0.0.1:6379&gt; save</span><br><span class="line">OK</span><br><span class="line">(7.38s)</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端2</span></span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">"world"</span><br><span class="line">(5.76s)</span><br></pre></td></tr></table></figure>
+
+<p>由上可见, save命令是一个阻塞命令.上诉情况在生产中是不可接受的</p>
+<ul>
+<li>查看生成的RDB文件</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost redis]# cd data/</span><br><span class="line">[root@localhost data]# ll</span><br><span class="line">总用量 129672</span><br><span class="line">-rw-r--r--. 1 root root      2306 4月  19 00:40 6379.log</span><br><span class="line">-rw-r--r--. 1 root root 132777813 4月  19 00:40 dump-6379.rdb</span><br></pre></td></tr></table></figure>
+
+<h4 id="bgsave-fork"><a href="#bgsave-fork" class="headerlink" title="bgsave fork"></a>bgsave fork</h4><ul>
+<li>验证bgsave非阻塞</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在运行终端1的命令行立刻转到终端2运行命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端1</span></span><br><span class="line">127.0.0.1:6379&gt; bgsave</span><br><span class="line">Background saving started</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端2</span></span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">"world"</span><br><span class="line"></span><br><span class="line">[root@localhost data]# tail 6379.log</span><br><span class="line">16995:M 19 Apr 00:46:04.613 * Background saving started by pid 17243</span><br><span class="line">17243:C 19 Apr 00:46:12.022 * DB saved on disk</span><br><span class="line">17243:C 19 Apr 00:46:12.024 * RDB: 8 MB of memory used by copy-on-write</span><br><span class="line">16995:M 19 Apr 00:46:12.035 * Background saving terminated with success</span><br></pre></td></tr></table></figure>
+
+<p>可见, bgsave命令不会阻塞redis-cli而影响其他命令的执行</p>
+<ul>
+<li>验证bgsave会fork一个子进程</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在运行终端1的命令行立刻转到终端2运行命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端1</span></span><br><span class="line">127.0.0.1:6379&gt; bgsave</span><br><span class="line">Background saving started</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端2</span></span><br><span class="line">[root@localhost data]# ps -aux | grep redis- | grep -v "redis-cli" | grep -v "grep"</span><br><span class="line">root      16995  2.1 16.3 763492 632228 ?       Ssl  00:28   0:30 redis-server *:6379</span><br><span class="line">root      17384 96.6 16.3 763496 631256 ?       R    00:51   0:02 redis-rdb-bgsave *:6379</span><br><span class="line">[root@localhost data]# ps -aux | grep redis- | grep -v "redis-cli" | grep -v "grep"</span><br><span class="line">root      16995  2.1 16.3 763492 632228 ?       Ssl  00:28   0:30 redis-server *:6379</span><br></pre></td></tr></table></figure>
+
+<p>可见, 执行bgsave命令是, Redis会fork一个子进程进行保存RDB文件的操作</p>
+<ul>
+<li>验证Redis生成RDB的文件策略</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 在运行终端1的命令行立刻转到终端2运行命令</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端1</span></span><br><span class="line">127.0.0.1:6379&gt; bgsave</span><br><span class="line">Background saving started</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 终端2</span></span><br><span class="line">[root@localhost data]# ll</span><br><span class="line">总用量 260680</span><br><span class="line">-rw-r--r--. 1 root root      2895 4月  19 00:55 6379.log</span><br><span class="line">-rw-r--r--. 1 root root 132777813 4月  19 00:51 dump-6379.rdb</span><br><span class="line">-rw-r--r--. 1 root root 121151488 4月  19 00:55 temp-17444.rdb</span><br><span class="line">[root@localhost data]# ll</span><br><span class="line">总用量 129672</span><br><span class="line">-rw-r--r--. 1 root root      3086 4月  19 00:55 6379.log</span><br><span class="line">-rw-r--r--. 1 root root 132777813 4月  19 00:55 dump-6379.rdb</span><br></pre></td></tr></table></figure>
+
+<p>可见, Redis生成RDB的文件策略是执行命令时会把Redis内存中数据保存为一个临时的文件, 保存成功后删除旧的文件然后用新的文件代替之.</p>
+<h4 id="真的自动"><a href="#真的自动" class="headerlink" title="真的自动?"></a>真的自动?</h4><ul>
+<li>设置配置文件如下内容, 并执行如下命令</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">save 60 5</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost data]# vim ..&#x2F;config&#x2F;redis-6379.conf </span><br><span class="line">[root@localhost data]# redis-server ..&#x2F;config&#x2F;redis-6379.conf </span><br><span class="line">[root@localhost data]# redis-cli </span><br><span class="line">127.0.0.1:6379&gt; dbsize</span><br><span class="line">(integer) 0</span><br><span class="line">127.0.0.1:6379&gt; set hello world</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set a b</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set c d</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set e f</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set g h</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; set i j</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; exit</span><br><span class="line">[root@localhost data]# ll</span><br><span class="line">总用量 12</span><br><span class="line">-rw-r--r--. 1 root root 5914 4月  19 01:08 6379.log</span><br><span class="line">-rw-r--r--. 1 root root   33 4月  19 01:08 dump-6379.rdb</span><br><span class="line">[root@localhost data]# tail 6379.log </span><br><span class="line">17668:M 19 Apr 01:08:36.050 * 5 changes in 60 seconds. Saving...</span><br><span class="line">17668:M 19 Apr 01:08:36.052 * Background saving started by pid 17686</span><br><span class="line">17686:C 19 Apr 01:08:36.071 * DB saved on disk</span><br><span class="line">17686:C 19 Apr 01:08:36.072 * RDB: 4 MB of memory used by copy-on-write</span><br><span class="line">17668:M 19 Apr 01:08:36.152 * Background saving terminated with success</span><br><span class="line">17668:M 19 Apr 01:09:37.041 * 5 changes in 60 seconds. Saving...</span><br><span class="line">17668:M 19 Apr 01:09:37.043 * Background saving started by pid 17708</span><br><span class="line">17708:C 19 Apr 01:09:37.044 * DB saved on disk</span><br><span class="line">17708:C 19 Apr 01:09:37.045 * RDB: 4 MB of memory used by copy-on-write</span><br><span class="line">17668:M 19 Apr 01:09:37.144 * Background saving terminated with success</span><br></pre></td></tr></table></figure>
+
+<p>可见, 在满足RDB自动生成配置后, redis自动生成了RDB文件</p>
+<h4 id="RDB长啥样"><a href="#RDB长啥样" class="headerlink" title="RDB长啥样?"></a>RDB长啥样?</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost data]# cat dump-6379.rdb </span><br><span class="line">REDIS0006�ijhelloworldcdabefgh���9�ɺ�</span><br></pre></td></tr></table></figure>
+
+<h3 id="RDB总结"><a href="#RDB总结" class="headerlink" title="RDB总结"></a>RDB总结</h3><ul>
+<li>RDB是Redis内存到硬盘的快照, 用于持久化</li>
+<li>save通常会阻塞Redis</li>
+<li>bgsave不会阻塞Redis, 但会fork新进程</li>
+<li>save自动配置满足任一就会被执行</li>
+<li>有些RDB触发机制不容忽视</li>
+</ul>
+<h2 id="AOF"><a href="#AOF" class="headerlink" title="AOF"></a>AOF</h2><h3 id="RDB有什么问题"><a href="#RDB有什么问题" class="headerlink" title="RDB有什么问题"></a>RDB有什么问题</h3><h4 id="耗时-耗性能"><a href="#耗时-耗性能" class="headerlink" title="耗时, 耗性能"></a>耗时, 耗性能</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/54npT3MaIAmPoyd.jpg"  alt="2020-04-19_011806"></p>
+<h4 id="不可控-丢失数据"><a href="#不可控-丢失数据" class="headerlink" title="不可控, 丢失数据"></a>不可控, 丢失数据</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/KCIyh15EukFozd3.jpg"  alt="2020-04-19_011920"></p>
+<h3 id="什么是AOF"><a href="#什么是AOF" class="headerlink" title="什么是AOF"></a>什么是AOF</h3><h4 id="AOF运行原理-创建"><a href="#AOF运行原理-创建" class="headerlink" title="AOF运行原理 - 创建"></a>AOF运行原理 - 创建</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/pslMfFuVGdKQ9v6.jpg"  alt="2020-04-19_012104"></p>
+<p>注: 上述AOF存储内容只是为了演示方便, 实际存储内容并不是那样</p>
+<h4 id="AOF运行原理-恢复"><a href="#AOF运行原理-恢复" class="headerlink" title="AOF运行原理 - 恢复"></a>AOF运行原理 - 恢复</h4><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/95cZVS6rp1xWoyA.jpg"  alt="2020-04-19_012256"></p>
+<h3 id="AOF的三种策略"><a href="#AOF的三种策略" class="headerlink" title="AOF的三种策略"></a>AOF的三种策略</h3><h4 id="always"><a href="#always" class="headerlink" title="always"></a>always</h4><ul>
+<li>每条命令都会触发Redis的fsync到硬盘, 这样就不会有数据丢失</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/9V8oO5d2MB1QNGC.jpg"  alt="2020-04-19_012453"></p>
+<h4 id="everysec-默认"><a href="#everysec-默认" class="headerlink" title="everysec (默认)"></a>everysec (默认)</h4><ul>
+<li>每秒触发Redis的fsync到硬盘, 这样可以起到保护硬盘的作用</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/B5hWVHmwrKAio98.jpg"  alt="2020-04-19_012815"></p>
+<h4 id="no"><a href="#no" class="headerlink" title="no"></a>no</h4><ul>
+<li>操作系统决定触发Redis的fsync到硬盘</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/FZ1BX6Q7uiGjKaW.jpg"  alt="2020-04-19_012920"></p>
+<h3 id="三种策略选择"><a href="#三种策略选择" class="headerlink" title="三种策略选择"></a>三种策略选择</h3><ul>
+<li>一般使用默认的everysec (具体根据实际应用场景)</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/4GVa6w5gpsPANXC.jpg"  alt="2020-04-19_013225"></p>
+<h3 id="AOF重写"><a href="#AOF重写" class="headerlink" title="AOF重写"></a>AOF重写</h3><ul>
+<li>AOF重写就是把过期的, 没有用的, 重复的, 可以优化的命令化简, 使得AOF文件变小</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/BM6CbgmhEnZ9GzN.jpg"  alt="2020-04-19_013617"></p>
+<h4 id="AOF重写作用"><a href="#AOF重写作用" class="headerlink" title="AOF重写作用"></a>AOF重写作用</h4><ul>
+<li>减少磁盘占用量</li>
+<li>加速恢复速度</li>
+</ul>
+<h4 id="AOF重写实现两种方式"><a href="#AOF重写实现两种方式" class="headerlink" title="AOF重写实现两种方式"></a>AOF重写实现两种方式</h4><ul>
+<li>bgrewriteaof<ul>
+<li>和bgsave类似, fork一个子进程进行重写</li>
+</ul>
+</li>
+<li>AOF重写配置<ul>
+<li>实现自动重写</li>
+</ul>
+</li>
+</ul>
+<h5 id="bgrewriteaof"><a href="#bgrewriteaof" class="headerlink" title="bgrewriteaof"></a>bgrewriteaof</h5><p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/ngti2mkXCO1yLIF.jpg"  alt="2020-04-19_014257"></p>
+<h5 id="AOF重写配置"><a href="#AOF重写配置" class="headerlink" title="AOF重写配置"></a>AOF重写配置</h5><ul>
+<li><code>aof-load-truncated</code> AOF有问题时(突然宕机或其他条件造成的),在重启加载AOF文件时是否忽略这部分错误.</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/UYFAo8ugS5TRNsy.jpg"  alt="2020-04-19_014550"></p>
+<ul>
+<li>自动触发时机</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/3OngTvs5opltzuR.jpg"  alt="2020-04-19_014630"></p>
+<h4 id="AOF重写流程"><a href="#AOF重写流程" class="headerlink" title="AOF重写流程"></a>AOF重写流程</h4><ul>
+<li>3-1阶段表示在执行AOF重写期间redis进行的写操作依然会通过aof_buf写入到旧的AOF文件中</li>
+<li>3-2阶段表示在执行AOF重写期间redis进行的写操作还会通过aof_rewrite_buf写入到新的AOF文件中,在完成AOF文件重写后, 在5-3阶段新的AOF文件会替换掉旧的AOF文件</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/gLQ6Pj5W4YaJBIK.jpg"  alt="2020-04-19_014836"></p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><ul>
+<li><code>appendonly</code> 开启AOF重写</li>
+<li><code>appendfilename</code> AOF文件名</li>
+<li><code>appendfsync</code> AOF重写策略</li>
+<li><code>dir</code> 生成的RDB, AOF文件及日志目录</li>
+<li><code>no-appendfsync-on-rewrite</code> AOF重写时是否进行AOF的append操作, 即上图的3-1操作,(设置为no可能会在AOF重写失败时丢失AOF重写时间的这段数据, 一般为了性能设置为yes, 即不进行append操作)</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/WEbqH3JBcOKZ7Rp.jpg"  alt="2020-04-19_015432"></p>
+<h2 id="RDB和AOF的抉择"><a href="#RDB和AOF的抉择" class="headerlink" title="RDB和AOF的抉择"></a>RDB和AOF的抉择</h2><h3 id="RDB与AOF"><a href="#RDB与AOF" class="headerlink" title="RDB与AOF"></a>RDB与AOF</h3><ul>
+<li>启动优先级: 当redis宕机后, 优先使用AOF文件进行数据恢复</li>
+<li>轻重: 操作的轻重, RDB需全部数据进行持久化, 而AOF则是增量数据持久化</li>
+</ul>
+<p><img src="/" class="lazyload" data-src="https://i.loli.net/2020/04/19/TCo7KWp8MgvnReX.jpg"  alt="2020-04-19_020851"></p>
+<h3 id="RDB”最佳策略”"><a href="#RDB”最佳策略”" class="headerlink" title="RDB”最佳策略”"></a>RDB”最佳策略”</h3><ul>
+<li>关 (其实是永远关不掉的, 因为主从复制需要进行全量复制, 需要进行RDB操作)</li>
+<li>集中管理 (数据备份很有作用)</li>
+<li>主从, 从开 (即使是从节点, RDB操作粒度也不要设置过小)</li>
+</ul>
+<h3 id="AOF最佳策略"><a href="#AOF最佳策略" class="headerlink" title="AOF最佳策略"></a>AOF最佳策略</h3><ul>
+<li>开 : 缓存和存储</li>
+<li>AOF重写集中管理 (fork会占用CPU, 内存, 故在进行AOF重写时要注意不要在Redis单机多部署时集中进行重写, 而要集中管理)</li>
+<li>everysec</li>
+</ul>
+<h3 id="最佳策略"><a href="#最佳策略" class="headerlink" title="最佳策略"></a>最佳策略</h3><ul>
+<li>小分片 使用maxmemory设置最大内存对Redis进行管理, fork, RDB传输都会产生较小的开销 (缺点是分布式情况下产生更多的redis进程, CPU可能占用更多一些)</li>
+<li>缓存或者存储</li>
+<li>监控 (硬盘, 内存, 负载, 网络)</li>
+<li>足够的内存 (不要把全部内存分配给Redis, 否则进行fork之类的操作会造成内存错误)</li>
+</ul>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Jiavg</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://jiavag.github.io/2020/04/18/Redis/%E7%AC%AC5%E7%AB%A0-Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E5%8F%96%E8%88%8D%E5%92%8C%E9%80%89%E6%8B%A9/">https://jiavag.github.io/2020/04/18/Redis/%E7%AC%AC5%E7%AB%A0-Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%9A%84%E5%8F%96%E8%88%8D%E5%92%8C%E9%80%89%E6%8B%A9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://jiavag.github.io" target="_blank">Jiavg</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/Redis%E6%8C%81%E4%B9%85%E5%8C%96/">Redis持久化</a></div><div class="post_share"><div class="social-share" data-image="/img/bg/4.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button button--primary button--animated"> <i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="lazyload post-qr-code__img" src="/img/wechat.png" alt="微信"/><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="lazyload post-qr-code__img" src="/img/alipay.png" alt="支付寶"/><div class="post-qr-code__desc">支付寶</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="next-post pull-full"><a href="/2020/04/18/SQL/2.SQL-%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BD%BF%E7%94%A8%E5%8E%9F%E5%88%99/"><img class="next_cover lazyload" data-src="/img/bg/12.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">EXPLAIN用法和结果分析</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/04/14/Redis/第2章-Redis API的使用和理解/" title="Redis API的使用和理解"><img class="relatedPosts_cover lazyload"data-src="/img/bg/3.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-14</div><div class="relatedPosts_title">Redis API的使用和理解</div></div></a></div><div class="relatedPosts_item"><a href="/2020/04/17/Redis/第4章-Redis的其他功能/" title="Redis的其他功能"><img class="relatedPosts_cover lazyload"data-src="/img/bg/1.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-17</div><div class="relatedPosts_title">Redis的其他功能</div></div></a></div><div class="relatedPosts_item"><a href="/2020/04/14/Redis/第1章-Redis初识/" title="Redis初识"><img class="relatedPosts_cover lazyload"data-src="/img/bg/11.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-14</div><div class="relatedPosts_title">Redis初识</div></div></a></div></div><div class="clear_both"></div></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 By Jiavg</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lazysizes@latest/lazysizes.min.js" async=""></script></body></html>
